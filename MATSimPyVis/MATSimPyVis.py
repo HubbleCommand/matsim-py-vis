@@ -1,17 +1,4 @@
 # IMPORTANT NOTE - NEED TO USE env ENVIRONMENT (geopandas was installed with conda for simplicity)
-
-# From old project, not much done
-#from math import radians
-#import numpy as np
-#import matplotlib.pyplot as plt
-#
-#def main():
-#	x=np.arange(0, radians(1800), radians(12))
-#	plt.plot(x,np.cos(x), 'b')
-#	plt.show()
-#
-#main()
-
 import geopandas
 import matsim
 import pandas as pd
@@ -86,31 +73,21 @@ def compareEvents(events1Src, events2Src):
             link_counts[event['link']] -= 1
             eventsCounter += 1
             if eventsCounter % 1000 == 0:
-                print("Sime 2 : Got to event : " + str(eventsCounter))
+                print("Sim 2 : Got to event : " + str(eventsCounter))
 
     return link_counts
 
 # -------------------------------------------------------------------
 # 1. NETWORK: Read a MATSim network:
-print("")
-
-#networkSrc = 'D:/MATSim outputs to keep/equil output 2/output_network.xml.gz'
-#net = matsim.read_network(networkSrc)
-
-#geo = net.as_geo()  # combines links+nodes into a Geopandas dataframe with LINESTRINGs
 #geo = readNetworkFile('D:/MATSim outputs to keep/equil output 2/output_network.xml.gz')
 geo = readNetworkFile('D:/MATSim outputs to keep/ge 10pct tweaking/ge 1 tweaking/output_network.xml.gz')
-#geo.plot()    # try this in a notebook to see your network!
-#plt.show()
 
-# -------------------------------------------------------------------
 # 2. EVENTS: Stream through a MATSim event file.
 
 #link_counts = compareEvents('D:/MATSim outputs to keep/equil output 1/output_events.xml.gz', 'D:/MATSim outputs to keep/equil output 2/output_events.xml.gz')
 link_counts = compareEvents('D:/MATSim outputs to keep/ge 10pct tweaking/ge 1 tweaking/output_events.xml.gz', 'D:/MATSim outputs to keep/ge 10pct tweaking/ge 2 tweaking/output_events.xml.gz')
 
-# convert our link_counts dict to a pandas dataframe,
-# with 'link_id' column as the index and 'count' column with value:
+# convert our link_counts dict to a pandas dataframe, with 'link_id' column as the index and 'count' column with value:
 link_counts = pd.DataFrame.from_dict(link_counts, orient='index', columns=['count']).rename_axis('link_id')
 
 # attach counts to our Geopandas network from above
