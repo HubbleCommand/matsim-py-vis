@@ -106,7 +106,7 @@ def calculateNetworkCapacity():
 def getHourlyCongestionRatio(netSrc, eventsSrc):
     totalCapacity = 113844500.0 #Don't need to calculate this again
 
-    dictlista = [defaultdict(int) for x in range(24)]
+    dictlista = [defaultdict(int) for x in range(30)]
 
     eventsCounter = 0;
 
@@ -120,8 +120,9 @@ def getHourlyCongestionRatio(netSrc, eventsSrc):
             dictlista[slot] = q
 
             eventsCounter += 1
+            #print("Got to event : " + str(eventsCounter) + " in slot : " + str(slot))
             #if eventsCounter % 10000 == 0:
-                #print("Got to event : " + str(eventsCounter) + " in slot : " + str(slot))
+            #   print("Got to event : " + str(eventsCounter) + " in slot : " + str(slot))
                 
     timeSlotNumber = 0;
     for time in dictlista:
@@ -132,41 +133,34 @@ def getHourlyCongestionRatio(netSrc, eventsSrc):
 
 def getAllCongestionRatios():
     print("Getting congestion ratio for no reservations")
-    getHourlyCongestionRatio('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz', 
-        "D:/MATSim outputs to keep/zzz last run 1.0 factor reserve 0.0/output_events.xml.gz")
+    getHourlyCongestionRatio("D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/0%/output_network.xml.gz", 
+        "D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/0%/output_events.xml.gz")
 
     print("Getting congestion ratio for 30% reservations")
-    getHourlyCongestionRatio('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz', 
-        "D:/MATSim outputs to keep/ge 25pct 1.0 factor reserve 0.3/output_events.xml.gz")
+    getHourlyCongestionRatio("D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/30%/output_network.xml.gz", 
+        "D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/30%/output_events.xml.gz")
 
     print("Getting congestion ratio for 50% reservations")
-    getHourlyCongestionRatio('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz', 
-        "D:/MATSim outputs to keep/ge 25pct 1.0 factor reserve 0.5/output_events.xml.gz")
-
-    print("Getting congestion ratio for 60% reservations")
-    getHourlyCongestionRatio('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz', 
-        "D:/MATSim outputs to keep/ge 25pct 1.0 factor reserve 0.6/output_events.xml.gz")
+    getHourlyCongestionRatio("D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/50%/output_network.xml.gz", 
+        "D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/50%/output_events.xml.gz")
 
     print("Getting congestion ratio for 70% reservations")
-    getHourlyCongestionRatio('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz', 
-        "D:/MATSim outputs to keep/ge 25pct 1.0 factor reserve 0.7/output_events.xml.gz")
-
-    print("Getting congestion ratio for 70% reservations real factor")
-    getHourlyCongestionRatio('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz', 
-        "D:/MATSim outputs to keep/ge 25pct 1.0 factor reserve 0.7 real factor/output_events.xml.gz")
+    getHourlyCongestionRatio("D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/70%/output_network.xml.gz", 
+        "D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/70%/output_events.xml.gz")
 
     print("Getting congestion ratio for 100% reservations")
-    getHourlyCongestionRatio('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz', 
-        "D:/MATSim outputs to keep/zzz 2nd to last run/output_events.xml.gz")
+    getHourlyCongestionRatio("D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/100%/output_network.xml.gz", 
+        "D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/100%/output_events.xml.gz")
 
-'''
+
 # -------------------------------------------------------------------
 # 1. NETWORK: Read a MATSim network:
 #geo = readNetworkFile('D:/MATSim outputs to keep/equil output 2/output_network.xml.gz')
 #geo = readNetworkFile('D:/MATSim outputs to keep/ge 10pct tweaking/ge 1 tweaking/output_network.xml.gz')
 #geo = readNetworkFile('D:/MATSim outputs to keep/ge 25pct .5 factor/output_network.xml.gz')
 #geo = readNetworkFile('D:/MATSim outputs to keep/ge 25pct reserve/output_network.xml.gz')
-geo = readNetworkFile('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz')
+#geo = readNetworkFile('D:/MATSim outputs to keep/zzz 2nd to last run/output_network.xml.gz')
+geo = readNetworkFile('D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/100%/output_network.xml.gz')
 
 # 2. EVENTS: Stream through a MATSim event file.
 
@@ -177,22 +171,24 @@ geo = readNetworkFile('D:/MATSim outputs to keep/zzz 2nd to last run/output_netw
 #link_counts = compareEvents('D:/MATSim outputs to keep/ge 25pct reserve/output_events.xml.gz', 'D:/MATSim outputs to keep/ge 25pct no reserve/output_events.xml.gz')
 
 # 0% - 100%
-link_counts = compareEvents("D:/MATSim outputs to keep/zzz last run 1.0 factor reserve 0.0/output_events.xml.gz", "D:/MATSim outputs to keep/zzz 2nd to last run/output_events.xml.gz")
+#link_counts = compareEvents("D:/MATSim outputs to keep/zzz last run 1.0 factor reserve 0.0/output_events.xml.gz", "D:/MATSim outputs to keep/zzz 2nd to last run/output_events.xml.gz")
+link_counts = compareEvents("D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/0%/output_events.xml.gz", 
+                            "D:/Files/Uni/Projet Bachelor/00000 ge 10pct last runs/100%/output_events.xml.gz")
 
- convert our link_counts dict to a pandas dataframe, with "link_id" column as the index and "count" column with value:
+# convert our link_counts dict to a pandas dataframe, with "link_id" column as the index and "count" column with value:
 link_counts = pd.DataFrame.from_dict(link_counts, orient="index", columns=["count"]).rename_axis("link_id")
 
- attach counts to our Geopandas network from above
+# attach counts to our Geopandas network from above
 volumes = geo.merge(link_counts, on="link_id")
 volumes.crs={"init" :"epsg:4326"}
 volumes.to_file("countries.geojson", driver="GeoJSON")
 
- volumes.plot(column="count", figsize=(10,10), cmap="Wistia") #cmap is colormap
- https://matplotlib.org/3.1.0/tutorials/colors/colormaps.html
+# volumes.plot(column="count", figsize=(10,10), cmap="Wistia") #cmap is colormap
+# https://matplotlib.org/3.1.0/tutorials/colors/colormaps.html
 volumes.plot(column="count", figsize=(10,10), cmap="RdYlGn")
 
 plt.show()
 print("Should be showing...")
-'''
 
-getAllCongestionRatios()
+
+#getAllCongestionRatios()
