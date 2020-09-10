@@ -12,6 +12,13 @@ from bokeh.models import ColumnDataSource
 import matplotlib.pyplot as plt
 
 def readNetworkFile(file):
+    """Reads a MATSim network file and converts it to a geo
+    Parameters:
+        file (string): the path of the network file
+
+    Returns:
+        geo : the MATSim network
+    """
     print("Reading network...")
     net = matsim.read_network(file)
     print("Read network!")
@@ -20,6 +27,10 @@ def readNetworkFile(file):
     return geo
 
 def readEventsFile(file):
+    """Reads a MATSim events file
+    Parameters:
+        file (string): the path of the events file
+    """
     return matsim.event_reader(file, types='entered link,left link')
 
 def getEvent(event):
@@ -38,13 +49,13 @@ def getEvent(event):
     return link_counts
 
 def compareEvents(events1Src, events2Src):
-    """Compare the events of two simulations
+    """Compare the events of two simulations by link
 
     Parameters:
         events1Src (string): the path to the first simulation output events file
         events2Src (string): the path to the second simulation output events file
 
-    Returns
+    Returns:
         link_counts (defaultdic(int)):
     """
 
@@ -64,7 +75,6 @@ def compareEvents(events1Src, events2Src):
     for event in events1:
         if event['type'] == 'entered link':
             link_counts[event['link']] += 1
-            #link_counts[event['link']] = 0
             eventsCounter += 1
             if eventsCounter % 10000 == 0:
                 print("Sim 1 : Got to event : " + str(eventsCounter))
@@ -74,7 +84,6 @@ def compareEvents(events1Src, events2Src):
     for event in events2:
         if event['type'] == 'entered link':
             link_counts[event['link']] -= 1
-            #link_counts[event['link']] = 0
             eventsCounter += 1
             if eventsCounter % 10000 == 0:
                 print("Sim 2 : Got to event : " + str(eventsCounter))
@@ -85,24 +94,31 @@ def calculateNetworkCapacity(netSrc):
     """Calculate the total capacity of a MATSim network
 
     Parameters:
-    netSrc -- 
+        netSrc (string): the path of the network
+
+    Returns:
+        totalCapacity (int): the total capacity of the network
     """
     net = readNetworkFile(netSrc)
-    print(net)
-    print(type(net))
 
     netCounter = 0;
     totalCapacity = 0;
     print("Calculating capacity...")
     for index, row in net.iterrows():
         totalCapacity += row['capacity']
-        if netCounter % 10000 == 0:
-                print("Got to link : " + str(index) + " with capacity : " + str(row['capacity']))
+        
+        if netCounter % 100000 == 0:
+             print("Got to link : " + str(index) + " with capacity : " + str(row['capacity']))
+        netCounter += 1
 
     print("Total capacity : " + str(totalCapacity))
     return totalCapacity
 
-def getEventsMaximumTime(eventsSrc):
+def getEventsMaximumHour(eventsSrc):
+    """Gets the last hour of a MATSim simulation events file
+    Parameters:
+        eventsSrc (string): the path of the events file
+    """
     events = readEventsFile(eventsSrc)
     event = None
     counter = 0
@@ -110,11 +126,21 @@ def getEventsMaximumTime(eventsSrc):
         counter+=1
         if counter % 100000 == 0:
             print('Got to event : ' + str(counter))
-        #pass
     print("End time: " + str(event['time'] / 3600))
     return event['time'] / 3600
 
 def getHourlyCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity, endHour):
+    """Calculates the congestion ratio, per hour, of a MATSim simulation
+    Parameters:
+        netSrc (string):                the path to the network file
+        eventsSrc (string):             the path to the events file
+        totalNetworkCapacity (int):     the total capacity of the network (in vehicles / hour), can be calculated with calculateNetworkCapacity()
+        endHour (int):                  the last hour of the simulation, can be calculated with getEventsMaximumHour()
+
+    Returns:
+        dictlistRations ([float]): an array (index is the hour of the day) containing the congestion ratio of the network per hour 
+        dictlistVolumes ([int]): an array (index is the hour of the day) containing the count of vehicles on the network per hour 
+    """
     endHour = math.ceil(endHour)
     dictlista = [defaultdict(int) for x in range(endHour)]
 
@@ -134,8 +160,8 @@ def getHourlyCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity, endHour):
                print("Got to event : " + str(eventsCounter) + " in slot : " + str(slot))
                 
     timeSlotNumber = 0;
-    dictlistRations = [defaultdict(int) for x in range(endHour)]
-    dictlistVolumes = [defaultdict(int) for x in range(endHour)]
+    dictlistRations = [float for x in range(endHour)]
+    dictlistVolumes = [int for x in range(endHour)]
     for time in dictlista:
         sumVolume = sum(time.values())
         print("Time Slot: " + str(timeSlotNumber) + " Total volume: " + str(sumVolume) + "  Congestion Ratio : " + str(sumVolume/totalNetworkCapacity))
@@ -146,6 +172,13 @@ def getHourlyCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity, endHour):
     return dictlistRations, dictlistVolumes
 
 def doCompareTest(netSrc, events1Src, events2Src, cmap):
+    """Example / test of how to comapre 2 simulation event results
+    Parameters:
+        netSrc (string): path to the network file
+        events1Src (string): path to the first events file
+        events2Src (string): path to the second events file
+        cmap (string): the color map to use
+    """
     geo = readNetworkFile(netSrc)
     link_counts = compareEvents(events1Src, events2Src)
 
@@ -160,7 +193,17 @@ def doCompareTest(netSrc, events1Src, events2Src, cmap):
     plt.show()
     print("Should be showing...")
 
-# 0% - 100%
-#doCompareTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz', 'D:/tmp/100%/output_events.xml.gz', 'RdYlGn')
-endTime = getEventsMaximumTime('D:/tmp/0%/output_events.xml.gz')
-getHourlyCongestionRatio('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz', 113844500.0, endTime)
+def doRatioTest(netSrc, eventsSrc):
+    """Example / test of how to calculate congestion ratios
+    Parameters:
+        netSrc (string): path to the network file
+        eventsSrc (string): path to the events file
+    """
+    endTime = getEventsMaximumHour(eventsSrc) #calculates the last hour of the simulation, best to calculate this once and hard-code the value when doing for the same simulation
+    netCap = calculateNetworkCapacity(netSrc) #calculates the total capacîty of the network, best to calculate this once and hard-code the value when doing for simulations on the same network
+    res = getHourlyCongestionRatio(netSrc, eventsSrc, 113844500.0, endTime)
+    print(res[0])
+    print(res[1])
+
+#doCompareTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz', 'D:/tmp/100%/output_events.xml.gz', 'RdYlGn')   # 0% - 100%
+doRatioTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz')
