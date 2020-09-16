@@ -142,6 +142,7 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
     """
     #https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.line.html
     dictlistMillisVols = defaultdict(int)
+    dictlistMillisRats = defaultdict(int)
 
     events = readEventsFile(eventsSrc)
     totalPresentVehiclesCounter = 0
@@ -154,24 +155,18 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
             totalPresentVehiclesCounter -= 1;
 
         dictlistMillisVols[int(event['time'])] = totalPresentVehiclesCounter
+        dictlistMillisRats[int(event['time'])] = totalPresentVehiclesCounter / totalNetworkCapacity
         eventsCounter += 1
         if eventsCounter % 100000 == 0:
             print("Got to event : " + str(eventsCounter))
-
-    lastKey = list(dictlistMillisVols.keys())[-1]
-    table = [int for x in range(lastKey)]
-
-    #for key in dictlistMillisVols:
-     #   table[key] = dictlistMillisVols[key]
     
-    return dictlistMillisVols
+    return dictlistMillisVols, dictlistMillisRats
 
 
 """
 THIS FUNCTION IS REPRESENTATIVE OF THE CONGESTION RATIO, IT DOES NOT CALCULATE THE ACTUAL CONGESTION RATIO
 IN TERMS OF ANALYSING THE RESULTS OF A SINGLE SIMULATION OR MULTIPLE SIMULATIONS, IT IS FINE
 BUT FOR COMPARING TO THE RESULTS OF OTHER REPORTS IT WILL BE WRONG
-The previous paragraph is WRONG
 
 This was a design choice to represent the AMOUNT OF THE NETWORK USED WITHIN THE HOUR.
 Just getting the number of unique vehicles that traversed the network doesn't tell the whole story! We don't know how MUCH of the network they used! SO the way it is is actually perfectly fine!
@@ -179,7 +174,8 @@ Adding to the volume for each entered link is wrong, as a single vehicle can ent
 
 THE DATA GENERATED AND PRESENTED IN THE REPORT WAS USELESS, but still was good to compare to each other
 It was good to compare the different results, as the calculation error is the same in all of them.
-However, just look at the millisecond calculator, which looks at vehicle exit times as well
+However, just look at the millisecond calculator, which looks at vehicle exit times as well.
+Additionally, the graph outputted by the Millisecond analysis is very similar to the ones generated for the report
 """
 def getHourlyCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity, endHour):
     """Calculates the congestion ratio, per hour, of a MATSim simulation
@@ -263,12 +259,13 @@ def doMillisRatioTest(netSrc, eventsSrc):
         netSrc (string): path to the network file
         eventsSrc (string): path to the events file
     """
-    #endTime = getEventsLastMillis(eventsSrc) #calculates the last hour of the simulation, best to calculate this once and hard-code the value when doing for the same simulation
-    #netCap = calculateNetworkCapacity(netSrc) #calculates the total capacîty of the network, best to calculate this once and hard-code the value when doing for simulations on the same network
-    res = getMillisecondCongestionRatio(netSrc, eventsSrc, (113844500.0 / 3600))
-    print(res)
-    s = pd.Series(res)
+    netCap = calculateNetworkCapacity(netSrc) #calculates the total capacîty of the network, best to calculate this once and hard-code the value when doing for simulations on the same network
+    res = getMillisecondCongestionRatio(netSrc, eventsSrc, (netCap / 3600))
+
+    s = pd.Series(res[0])
     s.plot.line()
+    b = pd.Series(res[1])
+    b.plot.line(subplots=True)
     plt.show()
 
 #doCompareTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz', 'D:/tmp/100%/output_events.xml.gz', 'RdYlGn')   # 0% - 100%
