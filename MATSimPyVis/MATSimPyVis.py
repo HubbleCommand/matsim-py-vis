@@ -145,6 +145,7 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
 
     events = readEventsFile(eventsSrc)
     totalPresentVehiclesCounter = 0
+    eventsCounter = 0;
     for event in events:
         if event['type'] == 'vehicle enters traffic':
             totalPresentVehiclesCounter += 1
@@ -153,14 +154,17 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
             totalPresentVehiclesCounter -= 1;
 
         dictlistMillisVols[int(event['time'])] = totalPresentVehiclesCounter
+        eventsCounter += 1
+        if eventsCounter % 100000 == 0:
+            print("Got to event : " + str(eventsCounter))
 
-    lastKey = list(d.keys())[-1]
+    lastKey = list(dictlistMillisVols.keys())[-1]
     table = [int for x in range(lastKey)]
 
-    for key, value  in dictlistMillisVols:
-        table[key] = value
+    #for key in dictlistMillisVols:
+     #   table[key] = dictlistMillisVols[key]
     
-    return table
+    return dictlistMillisVols
 
 
 """
@@ -204,7 +208,7 @@ def getHourlyCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity, endHour):
             dictlista[slot] = q
 
             eventsCounter += 1
-            if eventsCounter % 10000 == 0:
+            if eventsCounter % 100000 == 0:
                print("Got to event : " + str(eventsCounter) + " in slot : " + str(slot))
                 
     timeSlotNumber = 0;
