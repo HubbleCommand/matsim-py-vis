@@ -31,7 +31,7 @@ def readEventsFile(file):
     Parameters:
         file (string): the path of the events file
     """
-    return matsim.event_reader(file, types='entered link,left link')
+    return matsim.event_reader(file, types='entered link,left link,vehicle enters traffic,vehicle leaves traffic')
 
 def getEvent(event):
     link_counts = defaultdict(int) # defaultdict creates a blank dict entry on first reference
@@ -130,9 +130,6 @@ def getEventsLastMillis(eventsSrc):
     print("End time: " + str(event['time'] / 3600))
     return event['time']
 
-"""
-Need to do another thing, LOOK AT EXIT TIMES!!!
-"""
 def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
     """Calculates the congestion ratio per millisecond, and prints to a Pandas line chart
     Parameters:
@@ -144,43 +141,26 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
         dictlistVolumes ([int]): an array (index is the millisecond of the day) containing the count of vehicles on the network per hour 
     """
     #https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.line.html
-    #dictlistMillis = [defaultdict(int) for x in range(endMilli)]
-    #dictlistMillis = defaultdict(defaultdict(int))
-    dictlistMillis = defaultdict(lambda: defaultdict(int))
     dictlistMillisVols = defaultdict(int)
 
-    eventsCounter = 0;
-
     events = readEventsFile(eventsSrc)
-    print("Type: " + str(type(events)))
     totalPresentVehiclesCounter = 0
     for event in events:
         if event['type'] == 'vehicle enters traffic':
-            """
-                q = dictlistMillis[int(event['time'])]
-                q[event['link']] += 1
-                dictlistMillis[int(event['time'])] = q
-
-                eventsCounter += 1
-                if eventsCounter % 10000 == 0:
-                   print("Got to event : " + str(eventsCounter) + " at time: " + str(event['time']))
-            """
             totalPresentVehiclesCounter += 1
-            dictlistMillisVols[int(event['time'])] = totalPresentVehiclesCounter
-            print(totalPresentVehiclesCounter)
 
         if event['type'] == 'vehicle leaves traffic':
             totalPresentVehiclesCounter -= 1;
-            dictlistMillisVols[int(event['time'])] = totalPresentVehiclesCounter
-            print(totalPresentVehiclesCounter)
+
+        dictlistMillisVols[int(event['time'])] = totalPresentVehiclesCounter
+
+    lastKey = list(d.keys())[-1]
+    table = [int for x in range(lastKey)]
+
+    for key, value  in dictlistMillisVols:
+        table[key] = value
     
-    dictlistVolumes = defaultdict(int) #[int for x in range(endHour)]
-    """
-        for key in dictlistMillis:
-            sumVolume = sum(dictlistMillis[key].values())
-            dictlistVolumes[key] = sumVolume
-    """
-    return dictlistMillisVols
+    return table
 
 
 """
@@ -193,8 +173,9 @@ This was a design choice to represent the AMOUNT OF THE NETWORK USED WITHIN THE 
 Just getting the number of unique vehicles that traversed the network doesn't tell the whole story! We don't know how MUCH of the network they used! SO the way it is is actually perfectly fine!
 Adding to the volume for each entered link is wrong, as a single vehicle can enter multiple links!!! (ACTUALLY WE WANT HOW IT IS RIGHT NOW WHEN CALCULATING FOR PERIODS OF TIME!!!!!)
 
-HOLY FUCK this could all be wrong, AS DID NOT LOOK AT LINK EXIT TIMES AT ALL.
 THE DATA GENERATED AND PRESENTED IN THE REPORT WAS USELESS, but still was good to compare to each other
+It was good to compare the different results, as the calculation error is the same in all of them.
+However, just look at the millisecond calculator, which looks at vehicle exit times as well
 """
 def getHourlyCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity, endHour):
     """Calculates the congestion ratio, per hour, of a MATSim simulation
@@ -282,6 +263,9 @@ def doMillisRatioTest(netSrc, eventsSrc):
     #netCap = calculateNetworkCapacity(netSrc) #calculates the total capacîty of the network, best to calculate this once and hard-code the value when doing for simulations on the same network
     res = getMillisecondCongestionRatio(netSrc, eventsSrc, (113844500.0 / 3600))
     print(res)
+    s = pd.Series(res)
+    s.plot.line()
+    plt.show()
 
 #doCompareTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz', 'D:/tmp/100%/output_events.xml.gz', 'RdYlGn')   # 0% - 100%
 doMillisRatioTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz')
