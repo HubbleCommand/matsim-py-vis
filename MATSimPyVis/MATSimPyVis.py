@@ -105,6 +105,10 @@ def calculateNetworkCapacity(netSrc):
     totalCapacity = 0;
     print("Calculating capacity...")
     for index, row in net.iterrows():
+        """
+            Here, you could, for example, only take where row['attributes']['type'] == 'residential'
+            Look at getMillisecondCongestionRatio to see how you could only take flow on residential roads into account
+        """
         totalCapacity += row['capacity']
         
         if netCounter % 100000 == 0:
@@ -141,6 +145,7 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
         dictlistVolumes ([int]): an array (index is the millisecond of the day) containing the count of vehicles on the network per hour 
     """
     #https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.line.html
+    net = readNetworkFile(netSrc)
     dictlistMillisVols = defaultdict(int)
     dictlistMillisRats = defaultdict(int)
 
@@ -148,6 +153,14 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
     totalPresentVehiclesCounter = 0
     eventsCounter = 0;
     for event in events:
+        """
+            if net[event['link']]['attributes']['type'] == 'residential'
+                if event['type'] == 'entered link':
+                    totalPresentVehiclesCounter += 1
+
+                if event['type'] == 'left link':
+                    totalPresentVehiclesCounter -= 1;
+        """
         if event['type'] == 'vehicle enters traffic':
             totalPresentVehiclesCounter += 1
 
@@ -253,20 +266,20 @@ def doRatioTest(netSrc, eventsSrc):
     print(res[0])
     print(res[1])
 
-def doMillisRatioTest(netSrc, eventsSrc):
+def doMillisRatioTest():
     """Example / test of how to calculate congestion ratios
     Parameters:
         netSrc (string): path to the network file
         eventsSrc (string): path to the events file
     """
-    netCap = calculateNetworkCapacity(netSrc) #calculates the total capacîty of the network, best to calculate this once and hard-code the value when doing for simulations on the same network
-    res = getMillisecondCongestionRatio(netSrc, eventsSrc, (netCap / 3600))
+    netCap0 = calculateNetworkCapacity('D:/tmp/0%/output_network.xml.gz') #calculates the total capacîty of the network, best to calculate this once and hard-code the value when doing for simulations on the same network
+    res0 = getMillisecondCongestionRatio('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz', (netCap0 / 3600000))
+    #res1 = getMillisecondCongestionRatio('D:/tmp/100%/output_network.xml.gz', 'D:/tmp/100%/output_events.xml.gz', (netCap0 / 3600000))
 
-    s = pd.Series(res[0])
-    s.plot.line()
-    b = pd.Series(res[1])
-    b.plot.line(subplots=True)
+    #df = pd.DataFrame.from_dict({'0%':res0[1],'100%':res1[1]})
+    df = pd.DataFrame.from_dict({'0%':res0[1]})
+    df.plot.line()
     plt.show()
 
 #doCompareTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz', 'D:/tmp/100%/output_events.xml.gz', 'RdYlGn')   # 0% - 100%
-doMillisRatioTest('D:/tmp/0%/output_network.xml.gz', 'D:/tmp/0%/output_events.xml.gz')
+doMillisRatioTest()
