@@ -26,16 +26,17 @@ def readNetworkFile(file):
     print("Network ready!")
     return geo
 
-def readEventsFile(file):
+def readEventsFile(file, types):
     """Reads a MATSim events file
     Parameters:
         file (string): the path of the events file
+        types (string): the event types to consider
     """
-    return matsim.event_reader(file, types='entered link,left link,vehicle enters traffic,vehicle leaves traffic')
+    return matsim.event_reader(file, types=types)
 
 def getEvent(event):
     link_counts = defaultdict(int) # defaultdict creates a blank dict entry on first reference
-    events = readEventsFile(events)
+    events = readEventsFile(events, 'entered link,left link,vehicle enters traffic,vehicle leaves traffic')
 
     eventsCounter = 0
     for event in events:
@@ -63,10 +64,10 @@ def compareEvents(events1Src, events2Src):
     link_counts = defaultdict(int)
 
     print("Loading events 1...")
-    events1 = readEventsFile(events1Src)
+    events1 = readEventsFile(events1Src, 'entered link,left link,vehicle enters traffic,vehicle leaves traffic')
     print("Loaded events 1!")
     print("Loading events 2...")
-    events2 = readEventsFile(events2Src)
+    events2 = readEventsFile(events2Src, 'entered link,left link,vehicle enters traffic,vehicle leaves traffic')
     print("Loaded events 2!")
     
     eventsCounter = 0
@@ -123,7 +124,7 @@ def getEventsLastMillis(eventsSrc):
     Parameters:
         eventsSrc (string): the path of the events file
     """
-    events = readEventsFile(eventsSrc)
+    events = readEventsFile(eventsSrc, 'entered link,left link,vehicle enters traffic,vehicle leaves traffic')
     event = None
     counter = 0
     for event in events:
@@ -149,7 +150,7 @@ def getMillisecondCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity):
     dictlistMillisVols = defaultdict(int)
     dictlistMillisRats = defaultdict(int)
 
-    events = readEventsFile(eventsSrc)
+    events = readEventsFile(eventsSrc, 'entered link,left link,vehicle enters traffic,vehicle leaves traffic')
     totalPresentVehiclesCounter = 0
     eventsCounter = 0;
     for event in events:
@@ -207,7 +208,7 @@ def getHourlyCongestionRatio(netSrc, eventsSrc, totalNetworkCapacity, endHour):
 
     eventsCounter = 0;
 
-    events = readEventsFile(eventsSrc)
+    events = readEventsFile(eventsSrc, 'entered link,left link,vehicle enters traffic,vehicle leaves traffic')
     print("Type: " + str(type(events)))
     for event in events:
         if event['type'] == 'entered link':
